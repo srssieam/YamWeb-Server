@@ -36,7 +36,7 @@ async function run() {
         const purchaseCollection = database.collection("purchased-items")
 
         app.get('/v1/api/foodItems', async (req, res) => {
-            console.log(req.query.foodCategory)
+            // console.log(req.query.foodCategory)
             let query = {}; // get all food
             if (req.query?.foodCategory){
                 query = {foodCategory:req.query.foodCategory} // get those category based foods only
@@ -52,8 +52,16 @@ async function run() {
             console.log(id)
             const query = { _id: new ObjectId(id) }
             const result = await foodCollection.findOne(query); // find the food which have this id
-            console.log(result)
+            // console.log(result)
             res.send(result)
+        })
+
+        // add new food item
+        app.post('/v1/api/foodItems', async (req, res) => {
+            const newItem = req.body;
+            console.log(newItem);
+            const result = await foodCollection.insertOne(newItem);
+            res.send(result);
         })
 
         app.get('/v1/api/purchasedItems', async(req, res)=>{
