@@ -33,6 +33,7 @@ async function run() {
 
         const database = client.db("yamweb"); // provide same database name, which you have created manually. else, it will create new database
         const foodCollection = database.collection("foodItems"); // provide same collection name, which you have created manually. else, it will create new collection
+        const purchaseCollection = database.collection("purchased-items")
 
         app.get('/v1/api/foodItems', async (req, res) => {
             console.log(req.query.foodCategory)
@@ -53,6 +54,13 @@ async function run() {
             const result = await foodCollection.findOne(query); // find the food which have this id
             console.log(result)
             res.send(result)
+        })
+
+        app.post('/v1/api/purchasedItems', async (req, res) => {
+            const purchasedItem = req.body;
+            console.log(purchasedItem);
+            const result = await purchaseCollection.insertOne(purchasedItem);
+            res.send(result);
         })
 
         // Send a ping to confirm a successful connection
