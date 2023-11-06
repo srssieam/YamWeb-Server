@@ -35,15 +35,23 @@ async function run() {
         const foodCollection = database.collection("foodItems"); // provide same collection name, which you have created manually. else, it will create new collection
         const purchaseCollection = database.collection("purchased-items")
 
+
         app.get('/v1/api/foodItems', async (req, res) => {
-            // console.log(req.query.foodCategory)
+            console.log(req.query?.email)
             let query = {}; // get all food
-            if (req.query?.foodCategory){
-                query = {foodCategory:req.query.foodCategory} // get those category based foods only
+            if (req.query?.email){
+                query = {email:req.query.email} // get those category based foods only
             }
             const cursor = foodCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
+        })
+
+        app.delete('/v1/api/foodItems/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = foodCollection.deleteOne(query)
+            res.send(result)
         })
 
         // get the food which carrying the id
@@ -59,7 +67,7 @@ async function run() {
         // add new food item
         app.post('/v1/api/foodItems', async (req, res) => {
             const newItem = req.body;
-            console.log(newItem);
+            // console.log(newItem);
             const result = await foodCollection.insertOne(newItem);
             res.send(result);
         })
