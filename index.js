@@ -1,12 +1,15 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 7000;
 
 // middleware
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173'], // client site url 
+    credentials: true
+}));
 app.use(express.json());
 
 
@@ -40,6 +43,16 @@ async function run() {
             const cursor = foodCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
+        })
+
+        // get the food which carrying the id
+        app.get('/v1/api/foodItems/:id', async (req, res) => {
+            const id = req.params.id; // get id from client site
+            console.log(id)
+            const query = { _id: new ObjectId(id) }
+            const result = await foodCollection.findOne(query); // find the food which have this id
+            console.log(result)
+            res.send(result)
         })
 
         // Send a ping to confirm a successful connection
