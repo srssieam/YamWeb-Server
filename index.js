@@ -29,10 +29,15 @@ async function run() {
         // await client.connect();
 
         const database = client.db("yamweb"); // provide same database name, which you have created manually. else, it will create new database
-        const serviceCollection = database.collection("foodItems"); // provide same collection name, which you have created manually. else, it will create new collection
+        const foodCollection = database.collection("foodItems"); // provide same collection name, which you have created manually. else, it will create new collection
 
         app.get('/v1/api/foodItems', async (req, res) => {
-            const cursor = serviceCollection.find();
+            console.log(req.query.foodCategory)
+            let query = {}; // get all food
+            if (req.query?.foodCategory){
+                query = {foodCategory:req.query.foodCategory} // get those category based foods only
+            }
+            const cursor = foodCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
         })
