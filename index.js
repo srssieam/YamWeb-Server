@@ -56,6 +56,22 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/v1/api/purchasedItems', async(req, res)=>{
+            let query = {}; // get all purchased items
+            if (req.query?.email){
+                query = {email:req.query.email} // get all purchase item which have this email
+            }
+            const result = await purchaseCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        app.delete('/v1/api/purchasedItems/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = purchaseCollection.deleteOne(query)
+            res.send(result)
+        })
+
         app.post('/v1/api/purchasedItems', async (req, res) => {
             const purchasedItem = req.body;
             console.log(purchasedItem);
