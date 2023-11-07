@@ -39,8 +39,8 @@ async function run() {
         app.get('/v1/api/foodItems', async (req, res) => {
             console.log(req.query?.email)
             let query = {}; // get all food
-            if (req.query?.email){
-                query = {email:req.query.email} // get those category based foods only
+            if (req.query?.email) {
+                query = { email: req.query.email } // get those category based foods only
             }
             const cursor = foodCollection.find(query);
             const result = await cursor.toArray();
@@ -72,10 +72,33 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/v1/api/purchasedItems', async(req, res)=>{
+        app.put('/v1/api/foodItems/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedItems = req.body;
+            // console.log(updatedItems)
+            const item = {
+                $set: {
+                    foodName: updatedItems.foodName,
+                    foodImage: updatedItems.foodImage,
+                    foodCategory: updatedItems.foodCategory,
+                    quantity: updatedItems.quantity,
+                    price: updatedItems.price,
+                    name: updatedItems.name,
+                    email: updatedItems.email,
+                    foodOrigin: updatedItems.foodOrigin,
+                    description: updatedItems.description
+                }
+            }
+            const result = await foodCollection.updateOne(filter, item, options)
+            res.send(result)
+        })
+
+        app.get('/v1/api/purchasedItems', async (req, res) => {
             let query = {}; // get all purchased items
-            if (req.query?.email){
-                query = {email:req.query.email} // get all purchase item which have this email
+            if (req.query?.email) {
+                query = { email: req.query.email } // get all purchase item which have this email
             }
             const result = await purchaseCollection.find(query).toArray()
             res.send(result)
