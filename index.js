@@ -167,10 +167,10 @@ async function run() {
 
         app.get('/v1/api/purchasedItems', verifyToken, async (req, res) => {
             let query = {}; // get all purchased items
-            if (req.query?.email) {
-                query = { email: req.query.email } // get all purchase item which have this email
+            if (req.query?.buyerEmail) {
+                query = {buyerEmail: req.query.buyerEmail } // get all purchase item which have this email
             }
-            if(req.user.email !== req.query.email){  // compare between user email and cookie email 
+            if(req.user.email !== req.query.buyerEmail){  // compare between user email and cookie email 
                 return res.status(403).send({message: 'forbidden access'})
             }
             const result = await purchaseCollection.find(query).toArray()
