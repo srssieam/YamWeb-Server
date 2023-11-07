@@ -40,8 +40,13 @@ async function run() {
         app.post('/v1/api/jwt', async (req, res) => {
             const loggedUser = req.body; // get the loggedUser from client site
             console.log('user for token', loggedUser);
-            const token = jwt.sign(loggedUser, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '5h' }) // generated a token for logged user
-            res.send({ token }); // send the token to client site
+            const token = jwt.sign(loggedUser, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '2h' }) // generated a token for logged user
+            res.cookie('yamweb', token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'none'
+            })
+            res.send({success: true}); // send success status to client side
         })
 
         // get food items
