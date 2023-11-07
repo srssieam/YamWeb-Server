@@ -15,6 +15,24 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+// created a middleware to verify the token
+const verifyToken = (req, res, next) =>{
+    const token = req?.cookies?.yamweb;   // get the cookie from client site
+    console.log('token in the middleware', token);
+    // if no token available
+    if(!token){
+        return res.status(401).send({message: 'unauthorized access'})
+    }
+    // if token available 
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded)=>{
+        if(err){
+            return res.status(401).send({message:'unauthorized access'})
+        }
+        req.user = decoded; // get the user who have token
+        next();
+    })
+}
+
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.xjpiwvy.mongodb.net/?retryWrites=true&w=majority`;
@@ -147,10 +165,13 @@ async function run() {
             res.send({ count });
         })
 
-        app.get('/v1/api/purchasedItems', async (req, res) => {
+        app.get('/v1/api/purchasedItems', verifyToken, async (req, res) => {
             let query = {}; // get all purchased items
             if (req.query?.email) {
                 query = { email: req.query.email } // get all purchase item which have this email
+            }
+            if(req.user.email !== req.query.email){  // compare between user email and cookie email 
+                return res.status(403).send({message: 'forbidden access'})
             }
             const result = await purchaseCollection.find(query).toArray()
             res.send(result)
