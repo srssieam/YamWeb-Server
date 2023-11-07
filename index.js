@@ -16,17 +16,17 @@ app.use(express.json());
 app.use(cookieParser());
 
 // created a middleware to verify the token
-const verifyToken = (req, res, next) =>{
+const verifyToken = (req, res, next) => {
     const token = req?.cookies?.yamweb;   // get the cookie from client site
     // console.log('token in the middleware', token);
     // if no token available
-    if(!token){
-        return res.status(401).send({message: 'unauthorized access'})
+    if (!token) {
+        return res.status(401).send({ message: 'unauthorized access' })
     }
     // if token available 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded)=>{
-        if(err){
-            return res.status(401).send({message:'unauthorized access'})
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: 'unauthorized access' })
         }
         req.user = decoded; // get the user who have token
         next();
@@ -65,10 +65,10 @@ async function run() {
                 secure: true,
                 sameSite: 'none'
             })
-            res.send({success: true}); // send success status to client side
+            res.send({ success: true }); // send success status to client side
         })
 
-        app.post('/v1/api/logout', async(req, res) =>{
+        app.post('/v1/api/logout', async (req, res) => {
             const loggedUser = req.body;  // get loggedUser={}
             // console.log('logging out', loggedUser)
             res.clearCookie('yamweb').send({ success: true }) // clear the cookie
@@ -83,6 +83,7 @@ async function run() {
                 const cursor = foodCollection.find(query);
                 const result = await cursor.toArray();
                 res.send(result);
+                return;
             }
 
             // console.log(req.query?.email)
@@ -91,23 +92,42 @@ async function run() {
                 const cursor = foodCollection.find(query);
                 const result = await cursor.toArray();
                 res.send(result);
+                return;
             }
             else if (req.query?.page) {
                 const page = parseInt(req.query.page); // get page number from client 
                 const size = parseInt(req.query.size)  // get itemsPerPage from client
                 const result = await foodCollection.find().skip(page * size).limit(size).toArray();  // get products according to page from database 
                 res.send(result); // send those products to client site
+                return;
             }
             else if (req.query?.search) {
                 const filter = req.query.search;
                 // console.log(filter)
                 const query = {
-                     foodName: {$regex: filter, $options: 'i'}
+                    foodName: { $regex: filter, $options: 'i' }
                 };
                 const cursor = foodCollection.find(query);
                 const result = await cursor.toArray();
                 res.send(result);
+                return;
             }
+            else if (req.query?.topItem){
+                console.log(req.query.topItem);
+                const result = await foodCollection.find().toArray();
+                result.sort((a,b)=>{
+                    const itemA = a.OrderedCount;
+                    const itemB = b.OrderedCount;
+                    return itemB - itemA;
+                })
+                res.send(result.slice(0,6))
+                console.log(result.slice(0,6))
+                return;
+            }
+                const result = await foodCollection.find().toArray();
+                
+                // console.log(result)
+                res.send(result.slice(0,6))
 
         })
 
@@ -140,11 +160,11 @@ async function run() {
         app.patch('/v1/api/foodItems/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
-            const updatedOrderedCount = req.body;  
+            const updatedOrderedCount = req.body;
             console.log(updatedOrderedCount)
             const updateDoc = {
                 $set: {
-                    OrderedCount:updatedOrderedCount.totalOrderedCount
+                    OrderedCount: updatedOrderedCount.totalOrderedCount
                 }
             };
             const result = await foodCollection.updateOne(filter, updateDoc);
@@ -183,10 +203,10 @@ async function run() {
         app.get('/v1/api/purchasedItems', verifyToken, async (req, res) => {
             let query = {}; // get all purchased items
             if (req.query?.buyerEmail) {
-                query = {buyerEmail: req.query.buyerEmail } // get all purchase item which have this email
+                query = { buyerEmail: req.query.buyerEmail } // get all purchase item which have this email
             }
-            if(req.user.email !== req.query.buyerEmail){  // compare between user email and cookie email 
-                return res.status(403).send({message: 'forbidden access'})
+            if (req.user.email !== req.query.buyerEmail) {  // compare between user email and cookie email 
+                return res.status(403).send({ message: 'forbidden access' })
             }
             const result = await purchaseCollection.find(query).toArray()
             res.send(result)
