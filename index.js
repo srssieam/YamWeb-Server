@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 7000;
@@ -12,7 +13,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
-
+app.use(cookieParser());
 
 
 
@@ -58,6 +59,7 @@ async function run() {
         // get food items
         app.get('/v1/api/foodItems', async (req, res) => {
             let query = {}; // get all food
+            console.log('cookies from client site', req.cookies)
             if (req.query?.foodCategory) {
                 query = { foodCategory: req.query.foodCategory } // get those category based foods only
                 const cursor = foodCollection.find(query);
