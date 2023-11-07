@@ -43,10 +43,16 @@ async function run() {
             const token = jwt.sign(loggedUser, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '2h' }) // generated a token for logged user
             res.cookie('yamweb', token, {
                 httpOnly: true,
-                secure: false,
+                secure: true,
                 sameSite: 'none'
             })
             res.send({success: true}); // send success status to client side
+        })
+
+        app.post('/v1/api/logout', async(req, res) =>{
+            const loggedUser = req.body;  // get loggedUser={}
+            console.log('logging out', loggedUser)
+            res.clearCookie('yamweb').send({ success: true }) // clear the cookie
         })
 
         // get food items
