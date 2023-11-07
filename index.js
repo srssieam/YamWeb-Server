@@ -18,7 +18,7 @@ app.use(cookieParser());
 // created a middleware to verify the token
 const verifyToken = (req, res, next) =>{
     const token = req?.cookies?.yamweb;   // get the cookie from client site
-    console.log('token in the middleware', token);
+    // console.log('token in the middleware', token);
     // if no token available
     if(!token){
         return res.status(401).send({message: 'unauthorized access'})
@@ -58,7 +58,7 @@ async function run() {
         // auth related operation
         app.post('/v1/api/jwt', async (req, res) => {
             const loggedUser = req.body; // get the loggedUser from client site
-            console.log('user for token', loggedUser);
+            // console.log('user for token', loggedUser);
             const token = jwt.sign(loggedUser, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '2h' }) // generated a token for logged user
             res.cookie('yamweb', token, {
                 httpOnly: true,
@@ -70,14 +70,14 @@ async function run() {
 
         app.post('/v1/api/logout', async(req, res) =>{
             const loggedUser = req.body;  // get loggedUser={}
-            console.log('logging out', loggedUser)
+            // console.log('logging out', loggedUser)
             res.clearCookie('yamweb').send({ success: true }) // clear the cookie
         })
 
         // get food items
         app.get('/v1/api/foodItems', async (req, res) => {
             let query = {}; // get all food
-            console.log('cookies from client site', req.cookies)
+            // console.log('cookies from client site', req.cookies)
             if (req.query?.foodCategory) {
                 query = { foodCategory: req.query.foodCategory } // get those category based foods only
                 const cursor = foodCollection.find(query);
@@ -100,7 +100,7 @@ async function run() {
             }
             else if (req.query?.search) {
                 const filter = req.query.search;
-                console.log(filter)
+                // console.log(filter)
                 const query = {
                      foodName: {$regex: filter, $options: 'i'}
                 };
@@ -134,6 +134,21 @@ async function run() {
             // console.log(newItem);
             const result = await foodCollection.insertOne(newItem);
             res.send(result);
+        })
+
+        // update ordered count
+        app.patch('/v1/api/foodItems/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedOrderedCount = req.body;  
+            console.log(updatedOrderedCount)
+            const updateDoc = {
+                $set: {
+                    OrderedCount:updatedOrderedCount.totalOrderedCount
+                }
+            };
+            const result = await foodCollection.updateOne(filter, updateDoc);
+            res.send(result)
         })
 
         app.put('/v1/api/foodItems/:id', async (req, res) => {
