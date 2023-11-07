@@ -38,13 +38,13 @@ async function run() {
 
         app.get('/v1/api/foodItems', async (req, res) => {
             let query = {}; // get all food
-            if (req.query?.foodCategory){
-                query = {foodCategory:req.query.foodCategory} // get those category based foods only
+            if (req.query?.foodCategory) {
+                query = { foodCategory: req.query.foodCategory } // get those category based foods only
                 const cursor = foodCollection.find(query);
                 const result = await cursor.toArray();
                 res.send(result);
             }
-            
+
             // console.log(req.query?.email)
             else if (req.query?.email) {
                 query = { email: req.query.email } // get those category based foods only
@@ -58,7 +58,17 @@ async function run() {
                 const result = await foodCollection.find().skip(page * size).limit(size).toArray();  // get products according to page from database 
                 res.send(result); // send those products to client site
             }
-           
+            else if (req.query?.search) {
+                const filter = req.query.search;
+                console.log(filter)
+                const query = {
+                     foodName: {$regex: filter, $options: 'i'}
+                };
+                const cursor = foodCollection.find(query);
+                const result = await cursor.toArray();
+                res.send(result);
+            }
+
         })
 
         app.delete('/v1/api/foodItems/:id', async (req, res) => {
@@ -110,10 +120,10 @@ async function run() {
         })
 
         // pagination
-        app.get('/v1/api/itemsCount', async (req, res)=>{
+        app.get('/v1/api/itemsCount', async (req, res) => {
             const count = await foodCollection.estimatedDocumentCount();
-            res.send({count});
-          })
+            res.send({ count });
+        })
 
         app.get('/v1/api/purchasedItems', async (req, res) => {
             let query = {}; // get all purchased items
