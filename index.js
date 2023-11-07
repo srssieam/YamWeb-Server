@@ -37,14 +37,28 @@ async function run() {
 
 
         app.get('/v1/api/foodItems', async (req, res) => {
-            // console.log(req.query?.email)
             let query = {}; // get all food
-            if (req.query?.email) {
-                query = { email: req.query.email } // get those category based foods only
+            if (req.query?.foodCategory){
+                query = {foodCategory:req.query.foodCategory} // get those category based foods only
+                const cursor = foodCollection.find(query);
+                const result = await cursor.toArray();
+                res.send(result);
             }
-            const cursor = foodCollection.find(query);
-            const result = await cursor.toArray();
-            res.send(result);
+            
+            // console.log(req.query?.email)
+            else if (req.query?.email) {
+                query = { email: req.query.email } // get those category based foods only
+                const cursor = foodCollection.find(query);
+                const result = await cursor.toArray();
+                res.send(result);
+            }
+            else if (req.query?.page) {
+                const page = parseInt(req.query.page); // get page number from client 
+                const size = parseInt(req.query.size)  // get itemsPerPage from client
+                const result = await foodCollection.find().skip(page * size).limit(size).toArray();  // get products according to page from database 
+                res.send(result); // send those products to client site
+            }
+           
         })
 
         app.delete('/v1/api/foodItems/:id', async (req, res) => {
