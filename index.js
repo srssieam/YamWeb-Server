@@ -37,7 +37,7 @@ async function run() {
 
 
         app.get('/v1/api/foodItems', async (req, res) => {
-            console.log(req.query?.email)
+            // console.log(req.query?.email)
             let query = {}; // get all food
             if (req.query?.email) {
                 query = { email: req.query.email } // get those category based foods only
@@ -57,7 +57,7 @@ async function run() {
         // get the food which carrying the id
         app.get('/v1/api/foodItems/:id', async (req, res) => {
             const id = req.params.id; // get id from client site
-            console.log(id)
+            // console.log(id)
             const query = { _id: new ObjectId(id) }
             const result = await foodCollection.findOne(query); // find the food which have this id
             // console.log(result)
@@ -95,6 +95,12 @@ async function run() {
             res.send(result)
         })
 
+        // pagination
+        app.get('/v1/api/itemsCount', async (req, res)=>{
+            const count = await foodCollection.estimatedDocumentCount();
+            res.send({count});
+          })
+
         app.get('/v1/api/purchasedItems', async (req, res) => {
             let query = {}; // get all purchased items
             if (req.query?.email) {
@@ -113,7 +119,7 @@ async function run() {
 
         app.post('/v1/api/purchasedItems', async (req, res) => {
             const purchasedItem = req.body;
-            console.log(purchasedItem);
+            // console.log(purchasedItem);
             const result = await purchaseCollection.insertOne(purchasedItem);
             res.send(result);
         })
