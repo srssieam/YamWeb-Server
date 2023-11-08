@@ -75,7 +75,7 @@ async function run() {
         })
 
         // get food items
-        app.get('/v1/api/foodItems', async (req, res) => {
+        app.get('/v1/api/foodItems', verifyToken, async (req, res) => {
             let query = {}; // get all food
             // console.log('cookies from client site', req.cookies)
             if (req.query?.foodCategory) {
@@ -89,6 +89,9 @@ async function run() {
             // console.log(req.query?.email)
             else if (req.query?.email) {
                 query = { email: req.query.email } // get those category based foods only
+                if (req.user.email !== req.query.email) {  // compare between user email and cookie email 
+                    return res.status(403).send({ message: 'forbidden access' })
+                }
                 const cursor = foodCollection.find(query);
                 const result = await cursor.toArray();
                 res.send(result);
@@ -121,12 +124,10 @@ async function run() {
                     return itemB - itemA;
                 })
                 res.send(result.slice(0,6))
-                console.log(result.slice(0,6))
+                // console.log(result.slice(0,6))
                 return;
             }
                 const result = await foodCollection.find().toArray();
-                
-                // console.log(result)
                 res.send(result.slice(0,6))
 
         })
@@ -164,7 +165,8 @@ async function run() {
             console.log(updatedOrderedCount)
             const updateDoc = {
                 $set: {
-                    OrderedCount: updatedOrderedCount.totalOrderedCount
+                    OrderedCount: updatedOrderedCount.totalOrderedCount,
+                    quantity: updatedOrderedCount.remainingQuantity,
                 }
             };
             const result = await foodCollection.updateOne(filter, updateDoc);
