@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 7000;
 
 // middleware
 app.use(cors({
-    origin: ['http://localhost:5173'], // client site url 
+    origin: ['http://localhost:5173', 'https://yamweb.netlify.app'], // client site url 
     credentials: true
 }));
 app.use(express.json());
@@ -75,7 +75,7 @@ async function run() {
         })
 
         // get food items
-        app.get('/v1/api/foodItems', verifyToken, async (req, res) => {
+        app.get('/v1/api/foodItems', async (req, res) => {
             let query = {}; // get all food
             // console.log('cookies from client site', req.cookies)
             if (req.query?.foodCategory) {
@@ -89,9 +89,6 @@ async function run() {
             // console.log(req.query?.email)
             else if (req.query?.email) {
                 query = { email: req.query.email } // get those category based foods only
-                if (req.user.email !== req.query.email) {  // compare between user email and cookie email 
-                    return res.status(403).send({ message: 'forbidden access' })
-                }
                 const cursor = foodCollection.find(query);
                 const result = await cursor.toArray();
                 res.send(result);
